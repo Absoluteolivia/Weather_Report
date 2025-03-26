@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: url('https://i.pinimg.com/736x/e2/47/1f/e2471f8a52c1fd810bd60471fdc7fe37.jpg') no-repeat center center fixed;
+            background-size: cover;
+            height: 100vh;
+            width: 100vw;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+        }
+        .container {
+            max-width: 400px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
+            outline: none;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            background: #ff9800;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .weather-info {
+            margin-top: 20px;
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Weather App</h1>
+        <input type="text" id="location" placeholder="Enter Location">
+        <button onclick="getWeather()">Get Weather</button>
+        <div class="weather-info" id="weather-info"></div>
+    </div>
+    
+    <script>
+        async function getWeather() {
+            const location = document.getElementById('location').value;
+            if (!location) {
+                alert('Please enter a location');
+                return;
+            }
+            
+            const apiKey = '4dca44e5f6784b34a33134840252403';
+            const url = `http://api.weatherapi.com/v1/current.json?key=${apiKey}&q=${location}&aqi=yes`;
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                if (data.error) {
+                    document.getElementById('weather-info').innerHTML = `<p>${data.error.message}</p>`;
+                    return;
+                }
+                
+                document.getElementById('weather-info').innerHTML = `
+                    <h2>${data.location.name}, ${data.location.country}</h2>
+                    <h3>${data.current.temp_c}°C</h3>
+                    <img src="${data.current.condition.icon}" alt="Weather Icon">
+                    <p>${data.current.condition.text}</p>
+                    <p>Humidity: ${data.current.humidity}%</p>
+                    <p>Wind: ${data.current.wind_kph} kph</p>
+                `;
+                
+                // Call AI voice function
+                speakWeather(data);
+            } catch (error) {
+                document.getElementById('weather-info').innerHTML = `<p>Error fetching data</p>`;
+            }
+        }
+        
+        function speakWeather(data) {
+            const speech = new SpeechSynthesisUtterance();
+            speech.text = `The weather in ${data.location.name}, ${data.location.country} is ${data.current.condition.text} with a temperature of ${data.current.temp_c} degrees Celsius. Humidity is at ${data.current.humidity} percent and wind speed is ${data.current.wind_kph} kilometers per hour.`;
+            speech.lang = "en-US";
+            speech.rate = 1;
+            speech.volume = 1;
+            window.speechSynthesis.speak(speech);
+        }
+        
+    </script>
+</body>
+</html>
